@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ethara.AI — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    /* CSS variables define kar rahe hain */
+    :root {
+      --ink:      #030712; 
+      --accent:   #00e5ff; 
+      --muted:    rgba(255,255,255,0.4);
+      --mono:     'IBM Plex Mono', monospace;
+      --display:  'Bebas Neue', sans-serif;
+      --serif:    'Crimson Pro', Georgia, serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: var(--mono); background: var(--ink); color: #fff; }
+
+    /* --- 3D CIRCLE LOADER (VIDEO STYLE) --- */
+    #loader-wrapper {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: var(--ink);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 9999; transition: opacity 0.5s ease;
+    }
+    
+    .spinner {
+        height: 4.5rem; 
+        width: 4.5rem; 
+        border-radius: 100%;
+        border: 4px solid transparent;
+        /* Video wali styling: bottom aur left border */
+        border-bottom: 4px solid #ffffff;
+        border-left: 4px solid #ffffff;
+        /* 3D Depth & Glow */
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.4), inset 0 0 10px rgba(0, 229, 255, 0.2);
+        filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));
+        animation: spinAnim 1s ease-in-out infinite;
+    }
+
+    @keyframes spinAnim {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    /* --- LOADER END --- */
+
+    /* Basic layout set ho raha hai yaha */
+    .split { display: grid; grid-template-columns: 50% 50%; height: 100vh; opacity: 0; transition: opacity 0.8s ease; }
+    .split.visible { opacity: 1; }
+
+    .left-panel { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 0 80px; }
+    .brand-display { position: relative; z-index: 2; }
+    .brand-sup { font-family: var(--mono); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 15px; display: block; }
+    .brand-name { font-family: var(--display); font-size: clamp(80px, 8vw, 120px); line-height: 0.9; color: #fff; letter-spacing: 2px; margin-bottom: 25px; }
+    .brand-name .accent { color: var(--accent); }
+    .brand-desc { font-family: var(--serif); font-size: 20px; font-style: italic; font-weight: 300; color: rgba(255,255,255,0.6); max-width: 400px; line-height: 1.5; margin-bottom: 40px; }
+    
+    .feature-list { display: flex; flex-direction: column; gap: 15px; }
+    .feature-item { display: flex; align-items: center; gap: 15px; font-family: var(--mono); font-size: 13px; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; }
+    .feature-item::before { content: ''; width: 20px; height: 2px; background: var(--accent); flex-shrink: 0; }
+    .left-panel::after { content: ''; position: absolute; right: 0; top: 15%; bottom: 15%; width: 1px; background: rgba(255,255,255,0.1); }
+
+    /* form styling  */
+    .right-panel { display: flex; flex-direction: column; justify-content: center; padding: 0 80px; }
+    .form-area { max-width: 380px; width: 100%; }
+
+    .form-greeting { font-family: var(--serif); font-size: 42px; font-weight: 300; font-style: italic; color: #fff; line-height: 1.1; margin-bottom: 10px; }
+    .form-greeting strong { font-style: normal; font-weight: 400; color: var(--accent); }
+    .form-sub { font-family: var(--mono); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 40px; }
+
+    .tab-row { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 40px; }
+    .tab-btn { flex: 1; background: none; border: none; padding: 12px 0; font-family: var(--mono); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); cursor: pointer; position: relative; transition: color 0.3s; }
+    .tab-btn.active { color: #fff; font-weight: bold; }
+    .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--accent); }
+
+    .form-panel { display: none; }
+    .form-panel.show { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .field-wrap { margin-bottom: 30px; position: relative; }
+    .field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 8px; }
+    
+    .field-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 10px 0; font-family: var(--mono); font-size: 16px; color: #fff; outline: none; transition: border-color 0.3s ease; appearance: none; }
+    .field-input::placeholder { color: rgba(255,255,255,0.2); }
+    .field-input:focus { border-bottom-color: var(--accent); }
+    
+    select.field-input { cursor: pointer; }
+    select.field-input option { background: var(--ink); color: #fff; }
+    
+    .btn-submit { width: 100%; background: #fff; color: var(--ink); border: none; padding: 16px 0; font-family: var(--mono); font-size: 13px; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 10px; border-radius: 4px; transition: all 0.3s ease; }
+    .btn-submit:hover { background: var(--accent); color: var(--ink); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 229, 255, 0.2); }
+    .btn-submit:active { transform: translateY(0); }
+
+    .flash-box { border-left: 3px solid; padding: 12px 16px; margin-bottom: 25px; font-size: 13px; font-family: var(--mono); background: rgba(255,255,255,0.05); }
+    .flash-danger { border-color: #ff4757; color: #ff6b81; }
+    .flash-success { border-color: #2ed573; color: #7bed9f; }
+
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { padding: 40px; align-items: center; }
+      html, body { overflow: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loader-wrapper">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="split" id="appSplit">
+    <div class="left-panel">
+      <div class="brand-display">
+        <span class="brand-sup">Workspace Portal</span>
+        <div class="brand-name">Ethara<span class="accent">.AI</span></div>
+        <p class="brand-desc">Where serious teams ship serious work — without the noise.</p>
+        <div class="feature-list">
+          <div class="feature-item">Role-based access control</div>
+          <div class="feature-item">Real-time task tracking</div>
+          <div class="feature-item">Clean & minimalist interface</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="form-area">
+        <div class="form-greeting">Welcome<br/><strong>back.</strong></div>
+        <div class="form-sub">Sign in to continue</div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-box flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="tab-row">
+          <button class="tab-btn active" id="tab_btn_1" onclick="switch_my_tab('login')">Sign In</button>
+          <button class="tab-btn" id="tab_btn_2" onclick="switch_my_tab('register')">Register</button>
+        </div>
+
+        <div id="panelLogin" class="form-panel show">
+          <form method="POST" action="{{ url_for('login') }}">
+            <div class="field-wrap">
+              <label class="field-label">Username</label>
+              <input type="text" name="username" class="field-input" placeholder="Enter username" required autocomplete="off"/>
+            </div>
+            <div class="field-wrap">
+              <label class="field-label">Password</label>
+              <input type="password" name="password" class="field-input" placeholder="••••••••" required autocomplete="off"/>
+            </div>
+            <button type="submit" class="btn-submit">Enter Workspace</button>
+          </form>
+        </div>
+
+        <div id="panelRegister" class="form-panel">
+          <form method="POST" action="{{ url_for('register') }}">
+            <div class="field-wrap">
+              <label class="field-label">Username</label>
+              <input type="text" name="username" class="field-input" placeholder="Choose username" required autocomplete="off"/>
+            </div>
+            <div class="field-wrap">
+              <label class="field-label">Password</label>
+              <input type="password" name="password" class="field-input" placeholder="••••••••" required autocomplete="off"/>
+            </div>
+            <div class="field-wrap">
+              <label class="field-label">Role</label>
+              <select name="role" class="field-input" required>
+                <option value="" disabled selected>Select role</option>
+                <option value="Admin">Admin</option>
+                <option value="Member">Member</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-submit">Create Account</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // dom ready hone par loader hide karo
+    window.onload = function() {
+      console.log("App load ho gayi hai"); // debug log
+      setTimeout(function() {
+        document.getElementById('loader-wrapper').style.opacity = '0';
+        document.getElementById('appSplit').classList.add('visible');
+        
+        setTimeout(() => {
+          document.getElementById('loader-wrapper').style.display = 'none';
+        }, 600); 
+      }, 1500); 
+    };
+
+    // tab badalne wala function
+    function switch_my_tab(target_tab) {
+      let b1 = document.getElementById('tab_btn_1');
+      let b2 = document.getElementById('tab_btn_2');
+      let p_login = document.getElementById('panelLogin');
+      let p_reg = document.getElementById('panelRegister');
+
+      if(target_tab === 'login') {
+        b1.classList.add('active');
+        b2.classList.remove('active');
+        p_login.classList.add('show');
+        p_reg.classList.remove('show');
+      } else {
+        b2.classList.add('active');
+        b1.classList.remove('active');
+        p_reg.classList.add('show');
+        p_login.classList.remove('show');
+      }
+    }
+  </script>
+</body>
+</html>
