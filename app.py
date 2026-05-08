@@ -4,7 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'ethara_ai_secret_9988' # change this later if going to prod
+app.config['SECRET_KEY'] = 'ethara_ai_secret_9988'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ethara_main.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -12,7 +12,6 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# user and task tables
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
@@ -31,7 +30,6 @@ class Task(db.Model):
 def load_user(uid):
     return User.query.get(int(uid))
 
-# db setup
 with app.app_context():
     db.create_all()
 
@@ -39,7 +37,6 @@ with app.app_context():
 def index():
     return redirect(url_for('login'))
 
-# auth routes
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -50,7 +47,6 @@ def register():
         print("registering:", uname)
 
         if User.query.filter_by(username=uname).first():
-            # Professional message for UI
             flash('Username already exists. Please choose a different one.', 'danger')
             return redirect(url_for('register'))
 
@@ -61,7 +57,6 @@ def register():
             db.session.add(new_u)
             db.session.commit()
             print("saved to db")
-            # Professional message for UI
             flash('Account created successfully. Please sign in to continue.', 'success')
             return redirect(url_for('login'))
         except Exception as err:
@@ -78,14 +73,16 @@ def login():
         
         u = User.query.filter_by(username=usr).first()
 
-        if u and check_password_hash(u.password_hash, pas):
+        if not u:
+            print("user mila hi nahi")
+            flash("We couldn't find an account with this username. Please register to get started.", 'danger')
+        elif not check_password_hash(u.password_hash, pas):
+            print("password galat hai")
+            flash("Incorrect password. Please try again.", 'danger')
+        else:
             login_user(u)
             print("logged in:", usr)
             return redirect(url_for('dashboard'))
-        else:
-            print("login fail hua")
-            # Professional message for UI
-            flash('Invalid username or password. Please try again.', 'danger')
             
     return render_template('login.html')
 
@@ -95,7 +92,6 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# main app pages
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -110,7 +106,6 @@ def dashboard():
         return render_template('dashboard.html', members=members, tasks=all_t, 
                                stats={'total': t_count, 'completed': c_count, 'pending': p_count})
     else:
-        # filter tasks for normal users
         my_t = Task.query.filter_by(user_id=current_user.id).all()
         
         t_count = len(my_t)
@@ -120,7 +115,6 @@ def dashboard():
         return render_template('dashboard.html', tasks=my_t, 
                                stats={'total': t_count, 'completed': c_count, 'pending': p_count})
 
-# api endpoints for frontend calls
 @app.route('/api/add_task', methods=['POST'])
 @login_required
 def api_add_task():
@@ -175,5 +169,4 @@ def api_delete_task(task_id):
     return jsonify({"status": "success", "message": "Task deleted successfully."}), 200
 
 if __name__ == '__main__':
-    # host set to 0.0.0.0 so you can check on phone
     app.run(host='0.0.0.0', port=5000, debug=True)
